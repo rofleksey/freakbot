@@ -7,5 +7,6 @@ func (c ContextKey) String() string {
 }
 
 var ChatIDContextKey ContextKey = "chat_id"
+var ChatNameContextKey ContextKey = "chat_name"
 var UserIDContextKey ContextKey = "user_id"
 var UsernameContextKey ContextKey = "username"

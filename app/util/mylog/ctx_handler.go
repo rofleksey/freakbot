@@ -43,6 +43,10 @@ func (h *contextHandler) Handle(ctx context.Context, r slog.Record) error {
 		r.AddAttrs(slog.Int64("chat_id", chatID))
 	}
 
+	if chatName, ok := ctx.Value(util.ChatNameContextKey).(string); ok {
+		r.AddAttrs(slog.String("chat_name", chatName))
+	}
+
 	r.AddAttrs(h.extractTelemetry(ctx)...)
 
 	return h.handler.Handle(ctx, r) //nolint: wrapcheck
