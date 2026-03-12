@@ -14,8 +14,7 @@ ENV CGO_ENABLED=0
 WORKDIR /opt
 RUN apk update && \
     apk add --no-cache curl ca-certificates && \
-    update-ca-certificates && \
-    ulimit -n 100000
+    update-ca-certificates
 COPY --from=apiBuilder /opt/freakbot /opt/freakbot
 EXPOSE 8080
 CMD [ "./freakbot", "run" ]
