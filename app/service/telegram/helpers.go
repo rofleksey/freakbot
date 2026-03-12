@@ -28,5 +28,5 @@ func needReply(text string) bool {
 
 	return travlyaRegex.MatchString(lowerText) ||
 		strings.Contains(lowerText, botUsername) ||
-		rand.Float32() < replyChance
+		(text != "" && rand.Float32() < replyChance)
 }
