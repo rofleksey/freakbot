@@ -5,10 +5,10 @@ import (
 	"strings"
 )
 
-const thePhrase = "Спасибо за травлю в интернете!"
+const botUsername = "maznevich_bot"
 
 var travlyaRegex = regexp.MustCompile("травл(?:я|и|ю|ей|е|ям|ями|ях|явш|емый|емую|емого)?")
 
-func containsBullying(text string) bool {
-	return travlyaRegex.MatchString(strings.ToLower(text))
+func needReply(text string) bool {
+	return travlyaRegex.MatchString(strings.ToLower(text)) || strings.Contains(strings.ToLower(text), botUsername)
 }

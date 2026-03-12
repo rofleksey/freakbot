@@ -1,10 +1,4 @@
 # Generated YAML configuration example
-# Service name for telemetry and logs
-service_name: freakbot
-
-sentry:
-  dsn: "https://a1b2c3d4e5f6g7h8a1b2c3d4e5f6g7h8@o123456.ingest.sentry.io/1234567"
-
 log:
   # Telegram logging config
   telegram:
@@ -14,26 +8,18 @@ log:
     # Chat ID to send messages to
     chat_id: 1001234567890
 
-telemetry:
-  # Whether to enable opentelemetry logs/metrics/traces export
-  enabled: true
-
-db:
-  # Postgres username
-  user: postgres
-
-  # Postgres password
-  pass: example_pass
-
-  # Postgres host
-  host: "localhost:5432"
-
-  # Postgres database name
-  database: freakbot
-
 telegram:
   # Chat bot token, obtain it via BotFather
   token: "1234567890:ABCdefGHIjklMNopQRstUVwxyZ-123456789"
 
-admin:
-  chat_id: 1234231
+openai:
+  api_key: example_apikey
+
+  base_url: example_baseurl
+
+  chat_model: example_chatmodel
+
+  embedding_model: example_embeddingmodel
+
+retrieval:
+  top_k: 8080

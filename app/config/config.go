@@ -3,49 +3,48 @@ package config
 import (
 	"os"
 
-	"github.com/caarlos0/env/v11"
 	"github.com/go-playground/validator/v10"
 	"github.com/samber/oops"
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	// Service name for telemetry and logs
-	ServiceName string    `yaml:"service_name" env:"SERVICE_NAME" example:"freakbot" validate:"required"`
-	Sentry      Sentry    `yaml:"sentry" envPrefix:"SENTRY_"`
-	Log         Log       `yaml:"log" envPrefix:"LOG_"`
-	Telemetry   Telemetry `yaml:"telemetry" envPrefix:"TELEMETRY_"`
-	Telegram    Telegram  `yaml:"telegram" envPrefix:"TELEGRAM_"`
+	Log       Log       `yaml:"log"`
+	Telegram  Telegram  `yaml:"telegram"`
+	OpenAI    OpenAI    `yaml:"openai"`
+	Retrieval Retrieval `yaml:"retrieval"`
 }
 
-type Sentry struct {
-	DSN string `yaml:"dsn" env:"DSN" example:"https://a1b2c3d4e5f6g7h8a1b2c3d4e5f6g7h8@o123456.ingest.sentry.io/1234567"`
+type OpenAI struct {
+	APIKey         string `yaml:"api_key" validate:"required"`
+	BaseURL        string `yaml:"base_url" validate:"required"`
+	ChatModel      string `yaml:"chat_model" validate:"required"`
+	EmbeddingModel string `yaml:"embedding_model" validate:"required"`
+}
+
+type Retrieval struct {
+	TopK int `yaml:"top_k" validate:"required,min=1,max=200"`
 }
 
 type Log struct {
 	// Telegram logging config
-	Telegram TelegramLog `yaml:"telegram" envPrefix:"TELEGRAM_"`
+	Telegram TelegramLog `yaml:"telegram"`
 }
 
 type TelegramLog struct {
 	// Chat bot token, obtain it via BotFather
-	Token string `yaml:"token" env:"TOKEN" example:"1234567890:ABCdefGHIjklMNopQRstUVwxyZ-123456789"`
+	Token string `yaml:"token" example:"1234567890:ABCdefGHIjklMNopQRstUVwxyZ-123456789"`
 	// Chat ID to send messages to
-	ChatID string `yaml:"chat_id" env:"CHAT_ID" example:"1001234567890"`
-}
-
-type Telemetry struct {
-	// Whether to enable opentelemetry logs/metrics/traces export
-	Enabled bool `yaml:"enabled" env:"ENABLED" example:"false"`
+	ChatID string `yaml:"chat_id" example:"1001234567890"`
 }
 
 type Telegram struct {
 	// Chat bot token, obtain it via BotFather
-	Token string `yaml:"token" env:"TOKEN" example:"1234567890:ABCdefGHIjklMNopQRstUVwxyZ-123456789"`
+	Token string `yaml:"token" example:"1234567890:ABCdefGHIjklMNopQRstUVwxyZ-123456789"`
 }
 
 type Admin struct {
-	ChatID string `yaml:"chat_id" env:"CHAT_ID" example:"1234231" validate:"required"`
+	ChatID string `yaml:"chat_id" example:"1234231" validate:"required"`
 }
 
 func Load(configPath string) (*Config, error) {
@@ -57,16 +56,6 @@ func Load(configPath string) (*Config, error) {
 	}
 	if err := yaml.Unmarshal(data, &result); err != nil {
 		return nil, oops.Errorf("failed to parse YAML config: %w", err)
-	}
-
-	if err := env.ParseWithOptions(&result, env.Options{ //nolint:exhaustruct
-		Prefix: "FREAKBOT_",
-	}); err != nil {
-		return nil, oops.Errorf("failed to parse environment variables: %w", err)
-	}
-
-	if result.ServiceName == "" {
-		result.ServiceName = "freakbot"
 	}
 
 	validate := validator.New(validator.WithRequiredStructEnabled())

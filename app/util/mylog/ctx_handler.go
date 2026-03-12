@@ -2,7 +2,6 @@ package mylog
 
 import (
 	"context"
-	"freakbot/app/util"
 	"log/slog"
 
 	"go.opentelemetry.io/otel/trace"
@@ -31,22 +30,6 @@ func (h *contextHandler) WithGroup(name string) slog.Handler {
 }
 
 func (h *contextHandler) Handle(ctx context.Context, r slog.Record) error {
-	if username, ok := ctx.Value(util.UsernameContextKey).(string); ok {
-		r.AddAttrs(slog.String("username", username))
-	}
-
-	if userID, ok := ctx.Value(util.UserIDContextKey).(int64); ok {
-		r.AddAttrs(slog.Int64("user_id", userID))
-	}
-
-	if chatID, ok := ctx.Value(util.ChatIDContextKey).(int64); ok {
-		r.AddAttrs(slog.Int64("chat_id", chatID))
-	}
-
-	if chatName, ok := ctx.Value(util.ChatNameContextKey).(string); ok {
-		r.AddAttrs(slog.String("chat_name", chatName))
-	}
-
 	r.AddAttrs(h.extractTelemetry(ctx)...)
 
 	return h.handler.Handle(ctx, r) //nolint: wrapcheck

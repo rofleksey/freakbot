@@ -2,7 +2,6 @@ package telegram
 
 import (
 	"context"
-	"freakbot/app/util"
 	"log/slog"
 
 	"github.com/go-telegram/bot"
@@ -16,21 +15,29 @@ func (s *Service) handleUpdates(ctx context.Context, _ *bot.Bot, update *models.
 }
 
 func (s *Service) handleMessage(ctx context.Context, msg *models.Message) {
-	ctx = context.WithValue(ctx, util.UsernameContextKey, msg.From.Username)
-	ctx = context.WithValue(ctx, util.UserIDContextKey, msg.From.ID)
-	ctx = context.WithValue(ctx, util.ChatIDContextKey, msg.Chat.ID)
-	ctx = context.WithValue(ctx, util.ChatNameContextKey, msg.Chat.Title)
+	if needReply(msg.Text) ||
+		len(msg.NewChatMembers) > 0 ||
+		msg.LeftChatMember != nil {
 
-	if containsBullying(msg.Text) || len(msg.NewChatMembers) > 0 || msg.LeftChatMember != nil {
+		if msg.Text == "" {
+			msg.Text = "Спасибо за травлю в интернете!"
+		}
+
+		replyText, err := s.chatbotSvc.GenerateReply(ctx, msg.Text)
+		if err != nil {
+			slog.ErrorContext(ctx, "Failed to generate reply", "error", err)
+			return
+		}
+
 		s.tgBot.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: msg.Chat.ID,
-			Text:   thePhrase,
+			Text:   replyText,
 			ReplyParameters: &models.ReplyParameters{
 				MessageID: msg.ID,
 			},
 		})
 
-		slog.InfoContext(ctx, "Send the phrase")
+		slog.InfoContext(ctx, "Freak reply", "text", replyText)
 		return
 	}
 }

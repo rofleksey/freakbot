@@ -3,15 +3,13 @@ package cmd
 import (
 	"context"
 	"freakbot/app/config"
+	"freakbot/app/service/chatbot"
 	"freakbot/app/service/telegram"
 	"freakbot/app/util/mylog"
-	"freakbot/app/util/telemetry"
 	"log/slog"
 	"os"
 	"os/signal"
-	"time"
 
-	"github.com/getsentry/sentry-go"
 	"github.com/go-telegram/bot"
 	"github.com/samber/do"
 	"github.com/spf13/cobra"
@@ -46,27 +44,7 @@ func runBot(_ *cobra.Command, _ []string) {
 	}
 	do.ProvideValue(di, cfg)
 
-	if err = telemetry.InitSentry(cfg); err != nil {
-		slog.Error("Failed to init sentry",
-			slog.Any("error", err),
-		)
-		os.Exit(1)
-		return
-	}
-	defer sentry.Flush(3 * time.Second)
-
-	tel, err := telemetry.Init(cfg)
-	if err != nil {
-		slog.Error("Failed to init telemetry",
-			slog.Any("error", err),
-		)
-		os.Exit(1)
-		return
-	}
-	defer tel.Shutdown(appCtx)
-	do.ProvideValue(di, tel)
-
-	if err = mylog.Init(cfg, tel); err != nil {
+	if err = mylog.Init(cfg); err != nil {
 		slog.Error("Failed to init logging",
 			slog.Any("error", err),
 		)
@@ -76,19 +54,6 @@ func runBot(_ *cobra.Command, _ []string) {
 	slog.InfoContext(appCtx, "Starting service...",
 		slog.Bool("telegram", true),
 	)
-
-	metrics, err := telemetry.NewMetrics(cfg, tel.Meter)
-	if err != nil {
-		slog.Error("Failed to init metrics",
-			slog.Any("error", err),
-		)
-		os.Exit(1)
-		return
-	}
-	do.ProvideValue(di, metrics)
-
-	tracing := telemetry.NewTracing(cfg, tel.Tracer)
-	do.ProvideValue(di, tracing)
 
 	telegramBot, err := bot.New(cfg.Telegram.Token)
 	if err != nil {
@@ -102,6 +67,7 @@ func runBot(_ *cobra.Command, _ []string) {
 	go telegramBot.Start(appCtx)
 	defer telegramBot.Close(appCtx)
 
+	do.Provide(di, chatbot.New)
 	do.Provide(di, telegram.New)
 
 	go func() {
