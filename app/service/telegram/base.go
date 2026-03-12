@@ -17,6 +17,7 @@ func (s *Service) handleUpdates(ctx context.Context, _ *bot.Bot, update *models.
 
 func (s *Service) handleMessage(ctx context.Context, msg *models.Message) {
 	if needReply(msg.Text) ||
+		msg.ReplyToMessage != nil && msg.ReplyToMessage.From != nil && msg.ReplyToMessage.From.Username == botUsername ||
 		len(msg.NewChatMembers) > 0 ||
 		msg.LeftChatMember != nil {
 
