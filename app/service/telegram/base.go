@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"log/slog"
+	"strings"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -22,6 +23,8 @@ func (s *Service) handleMessage(ctx context.Context, msg *models.Message) {
 		if msg.Text == "" {
 			msg.Text = "Спасибо за травлю в интернете!"
 		}
+
+		msg.Text = strings.ReplaceAll(msg.Text, "@"+botUsername, "")
 
 		replyText, err := s.chatbotSvc.GenerateReply(ctx, msg.Text)
 		if err != nil {
