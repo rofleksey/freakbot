@@ -10,8 +10,6 @@ const botUsername = "maznevich_bot"
 const replyChance = 0.02
 
 var phrases = []string{
-	"надо отыграться",
-	"стрим",
 	"бот",
 }
 
